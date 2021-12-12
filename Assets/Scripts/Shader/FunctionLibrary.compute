@@ -1,0 +1,55 @@
+#pragma kernel HexagonKernel
+#pragma kernel HexagonToHexagonKernel
+
+RWStructuredBuffer<float3> _Positions;
+
+uint _Resolution;
+
+int _CountCorners, _PrevCountCorner;
+float _Step, _TransitionProgress, _Rotation;
+float3 _OffsetPosition;
+
+float2 GetUV(uint3 id) {
+	return id.xy * _Step - 1.0;
+}
+
+void SetPosition(uint3 id, float3 position) {
+	if (id.x < _Resolution && id.y < _Resolution) {
+		_Positions[id.x + id.y * _Resolution] = position + _OffsetPosition;
+	}
+}
+
+#define PI 3.14159265358979323846
+
+float3 Hexagon(float u, float v, uint corner) {
+	float c = 1 + 1 / corner;
+	float rotation = (0.3 * c * sin(PI * u * corner + _Rotation));
+	float depth = 2 * c + ((0.5 * c * cos(PI * v)));
+	float s = 0.5 * (depth + rotation);
+	float3 p;
+	p.x = s * cos(PI * u);
+	p.y = 0;
+	p.z = s * sin(PI * u);
+	return p;
+}
+
+#define KERNEL_FUNCTION(function) \
+	[numthreads(8, 8, 1)] \
+	void function##Kernel (uint3 id: SV_DispatchThreadID) { \
+		float2 uv = GetUV(id); \
+		SetPosition(id, function(uv.x, uv.y, _CountCorners)); \
+	}
+
+#define KERNEL_CHANGED_CORNER(functionA, functionB) \
+	[numthreads(8, 8, 1)] \
+	void functionA##To##functionB##Kernel (uint3 id: SV_DispatchThreadID) { \
+		float2 uv = GetUV(id); \
+		float3 position = lerp( \
+			functionA(uv.x, uv.y, _PrevCountCorner), functionB(uv.x, uv.y, _CountCorners), \
+			_TransitionProgress \
+		); \
+		SetPosition(id, position); \
+	}
+
+KERNEL_FUNCTION(Hexagon);
+KERNEL_CHANGED_CORNER(Hexagon, Hexagon);
