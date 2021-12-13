@@ -27,7 +27,7 @@ namespace Resident {
 		public Material GetTypeMaterial => _typeMaterial;
 
 		private void Awake() {
-			_rotation = 0;//Random.Range(0, Mathf.PI * 2);
+			_rotation = Random.Range(0, 360) * Mathf.Deg2Rad;
 
 			_characterManager = FindObjectOfType<CharacterManager>();
 			_typeMaterial = _characterManager.GetTypeMaterials[ResidentType.TypeToInt(_type)];
@@ -66,7 +66,7 @@ namespace Resident {
 
 		private void FillPossibleAreas() {
 			for(int i = 1; i < _countCorners + 1; i++) {
-				float angle = (360 * i / _countCorners + 90 / _countCorners) * Mathf.Deg2Rad;
+				float angle = (360 * i / _countCorners + 90 / _countCorners) * Mathf.Deg2Rad - _rotation / _countCorners;
 				_possibleAreas.Add(new Vector3(
 					Mathf.Cos(angle),
 					0,
