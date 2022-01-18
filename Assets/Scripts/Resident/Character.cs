@@ -7,6 +7,7 @@ namespace Resident {
 	public abstract class Character: MonoBehaviour {
 		[SerializeField]
 		private Type _type;
+		public Type GetCharacterType => _type;
 		[SerializeField]
 		private Graph.GPUGraph _childGPUGraph;
 		[SerializeField, Min(2)]

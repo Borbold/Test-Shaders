@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -44,7 +44,12 @@ namespace Resident {
 						if(Vector3.Distance(character.transform.position, searchChar.transform.position) <
 							character.GetSearchRadius + searchChar.GetSearchRadius) {
 							character.ChangeCorners(searchChar.GetCorners);
-							RemoveCharacter(searchChar);
+							// Убрал возможность есть других особей у пассивных резидентов
+							if(character.GetCharacterType == Type.Passive) {
+								RemoveCharacter(character);
+							} else {
+								RemoveCharacter(searchChar);
+							}
 							_breakCycle = true;
 							break;
 						}
